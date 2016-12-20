@@ -17,6 +17,8 @@ class Agilent34970A(SCPIInstrument):
 	"""Agilent 34970A MUX"""
 
 # Allowed value arrays
+	RES_VALUES      = [1E2, 1E3, 1E4, 1E5, 1E6, 1E7, 1E8]
+	PLC_VALUES      = [0.02, 0.2, 1, 10, 20, 100, 200]
 	ONOFF_VALUES	= ['ON','OFF']
 	TRIGSOUR_VALUES = ['BUS','IMM','EXT','TIM']
 	ADVSOUR_VALUES  = ['EXT','BUS','IMM']
@@ -39,7 +41,7 @@ class Agilent34970A(SCPIInstrument):
     	if val not in ONOFF_VALUES:
     		raise ValueError("Channels configured for 4 wire measurement must be ON or OFF")
     	else:
-    		self.interface.write(("ROUT:CHAN:FWIR "+val+",(@"+','.join(['{:d}']*len(ch_list))+")").format(ch_list))
+    		self.interface.write(("ROUT:CHAN:FWIR {:s},(@"+','.join(['{:d}']*len(ch_list))+")").format(val,ch_list))
     	return
 
     def get_fwire(self, ch_list):
@@ -49,10 +51,13 @@ class Agilent34970A(SCPIInstrument):
 # Commands that configure resistance measurements with internal DMM
 
 	def set_resistance_range(self, val, ch_list, opts): 
-		if opts=="fw":
-			self.interface.write(("SENS:FRES:RANG "+val+",(@"+','.join(['{:d}']*len(ch_list))+")").format(ch_list))
-		else: 
-			self.interface.write(("SENS:RES:RANG "+val+",(@"+','.join(['{:d}']*len(ch_list))+")").format(ch_list))
+		if val not in RES_VALUES:
+    		raise ValueError(("Resistance range must be {"+'|'.join(['{:E}']*len(RES_VALUES))+"} Ohms").format(RES_VALUES))
+    	else: 
+			if opts=="fw":
+				self.interface.write(("SENS:FRES:RANG {:E},(@"+','.join(['{:d}']*len(ch_list))+")").format(val,ch_list))
+			else: 
+				self.interface.write(("SENS:RES:RANG {:E},(@"+','.join(['{:d}']*len(ch_list))+")").format(val,ch_list))
 		return
 
 	def get_resistance_range(self, ch_list, opts):
@@ -63,10 +68,13 @@ class Agilent34970A(SCPIInstrument):
 		return ch_string
 
 	def set_resistance_resolution(self, val, ch_list, opts):
-		if opts=="fw":
-			self.interface.write(("SENS:FRES:NPLC "+val+",(@"+','.join(['{:d}']*len(ch_list))+")").format(ch_list))
-		else: 
-			self.interface.write(("SENS:RES:NPLC "+val+",(@"+','.join(['{:d}']*len(ch_list))+")").format(ch_list))
+		if val not in PLC_VALUES:
+    		raise ValueError(("PLC integration times must be {"+'|'.join(['{:E}']*len(PLC_VALUES))+"} cycles").format(PLC_VALUES))
+    	else: 
+			if opts=="fw":
+				self.interface.write(("SENS:FRES:NPLC {:E},(@"+','.join(['{:d}']*len(ch_list))+")").format(val,ch_list))
+			else: 
+				self.interface.write(("SENS:RES:NPLC {:E},(@"+','.join(['{:d}']*len(ch_list))+")").format(val,ch_list))
 		return
 
 	def get_resistance_resolution(self, ch_list, opts):
@@ -77,10 +85,13 @@ class Agilent34970A(SCPIInstrument):
 		return ch_string
 
 	def set_resistance_zcomp(self, val, ch_list, opts):
-		if opts=="fw":
-			self.interface.write(("SENS:FRES:OCOM "+val+",(@"+','.join(['{:d}']*len(ch_list))+")").format(ch_list))
-		else: 
-			self.interface.write(("SENS:RES:OCOM "+val+",(@"+','.join(['{:d}']*len(ch_list))+")").format(ch_list))
+		if val not in ONOFF_VALUES:
+    		raise ValueError("Zero compensation must be ON or OFF. Only valid for resistance range less than 100 kOhm")
+    	else: 
+			if opts=="fw":
+				self.interface.write(("SENS:FRES:OCOM {:s},(@"+','.join(['{:d}']*len(ch_list))+")").format(val,ch_list))
+			else: 
+				self.interface.write(("SENS:RES:OCOM {:s},(@"+','.join(['{:d}']*len(ch_list))+")").format(val,ch_list))
 		return
 
 	def get_resistance_zcomp(self, ch_list, opts):
