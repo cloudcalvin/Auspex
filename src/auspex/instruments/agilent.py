@@ -38,66 +38,88 @@ class Agilent34970A(SCPIInstrument):
         super(Agilent34970A, self).connect(resource_name=self.resource_name, interface_type=interface_type)
         self.interface._resource.read_termination = u"\n"
 
-# FIXME!!!!!!!!!!!! Convert ch_string to array
+#Channel to String helper function converts int array to channel list string
+    def ch_to_str(self, ch_list):
+        return ("(@"+','.join(['{:d}']*len(ch_list))+")").format(*ch_list)
+
     @property
     def scanlist(self):
         ch_string = self.interface.query("ROUT:SCAN?")
         return ch_string
     @scanlist.setter
     def scanlist(self, ch_list):
-        self.interface.write(("ROUT:SCAN (@"+self.ch_to_str(ch_list)+")").format(ch_list))
+        self.interface.write("ROUT:SCAN "+self.ch_to_str(ch_list))
 
-    def ch_to_str(self, ch_list):
-        return ','.join(['{:d}']*len(ch_list))
+# Commands that configure resistance measurements without internal DMM
 
     def set_fwire(self, val, ch_list):
         if val not in ONOFF_VALUES:
             raise ValueError("Channels configured for 4 wire measurement must be ON or OFF")
+        if self.dmm=="ON"
+            raise Exception("Cannot issue command when DMM is enabled. Disable DMM")
         else:
-            self.interface.write(("ROUT:CHAN:FWIR {:s},(@"+self.ch_to_str(ch_list)+")").format(fw_char,val,ch_list))
+            self.interface.write(("ROUT:CHAN:FWIR {:s},"+self.ch_to_str(ch_list)).format(val))
 
     def get_fwire(self, ch_list):
-        return self.interface.query(("ROUT:CHAN:FWIR? (@"+self.ch_to_str(ch_list)+")").format(ch_list))
+        if self.dmm=="ON"
+            raise Exception("Cannot issue command when DMM is enabled. Disable DMM")
+        else:
+            return self.interface.query("ROUT:CHAN:FWIR? "+self.ch_to_str(ch_list))
 
 # Commands that configure resistance measurements with internal DMM
 
     def set_resistance_range(self, val, ch_list, fw=False):
         fw_char = "F" if fw else "" 
         if val not in RES_VALUES:
-            raise ValueError(("Resistance range must be {"+'|'.join(['{:E}']*len(RES_VALUES))+"} Ohms").format(RES_VALUES))
+            raise ValueError(("Resistance range must be {"+'|'.join(['{:E}']*len(RES_VALUES))+"} Ohms").format(*RES_VALUES))
+        if self.dmm=="OFF"
+            raise Exception("Cannot issue command when DMM is disabled. Enable DMM")
         else: 
-            self.interface.write(("SENS:{}RES:RANG {:E},(@"+self.ch_to_str(ch_list)+")").format(fw_char,val,ch_list))       
+            self.interface.write(("SENS:{}RES:RANG {:E},"+self.ch_to_str(ch_list)).format(fw_char,val))       
 
     def get_resistance_range(self, ch_list, fw=False):
         fw_char = "F" if fw else ""
-        query_str = ("SENS:{}RES:RANG? (@"+self.ch_to_str(ch_list)+")").format(fw_char,ch_list)
-        output = self.interface.query_ascii_values(query_str, converter=u'd')   
-        return {ch: val for ch, val in zip(ch_list, output) }
+        if self.dmm=="OFF"
+            raise Exception("Cannot issue command when DMM is disabled. Enable DMM")
+        else: 
+            query_str = ("SENS:{}RES:RANG? "+self.ch_to_str(ch_list)).format(fw_char,ch_list)
+            output = self.interface.query_ascii_values(query_str, converter=u'd')   
+            return {ch: val for ch, val in zip(ch_list, output) }
 
     def set_resistance_resolution(self, val, ch_list, fw=False):
         fw_char = "F" if fw else ""
         if val not in PLC_VALUES:
-            raise ValueError(("PLC integration times must be {"+'|'.join(['{:E}']*len(PLC_VALUES))+"} cycles").format(PLC_VALUES))
+            raise ValueError(("PLC integration times must be {"+'|'.join(['{:E}']*len(PLC_VALUES))+"} cycles").format(*PLC_VALUES))
+        if self.dmm=="OFF"
+            raise Exception("Cannot issue command when DMM is disabled. Enable DMM") 
         else: 
-            self.interface.write(("SENS:{}RES:NPLC {:E},(@"+self.ch_to_str(ch_list)+")").format(fw_char,val,ch_list))       
+            self.interface.write(("SENS:{}RES:NPLC {:E},"+self.ch_to_str(ch_list)).format(fw_char,val))       
 
     def get_resistance_resolution(self, ch_list, fw=False):
         fw_char = "F" if fw else ""
-        output = self.interface.query_ascii_values(("SENS:{}RES:NPLC? (@"+self.ch_to_str(ch_list)+")").format(fw_char,ch_list)) 
-        return {ch: val for ch, val in zip(ch_list, output) }
+        if self.dmm=="OFF"
+            raise Exception("Cannot issue command when DMM is disabled. Enable DMM") 
+        else:
+            output = self.interface.query_ascii_values(("SENS:{}RES:NPLC? "+self.ch_to_str(ch_list)).format(fw_char)) 
+            return {ch: val for ch, val in zip(ch_list, output) }
 
     def set_resistance_zcomp(self, val, ch_list, fw=False):
         fw_char = "F" if fw else ""
         if val not in ONOFF_VALUES:
             raise ValueError("Zero compensation must be ON or OFF. Only valid for resistance range less than 100 kOhm")
+        if self.dmm=="OFF"
+            raise Exception("Cannot issue command when DMM is disabled. Enable DMM") 
         else: 
-            self.interface.write(("SENS:{}RES:OCOM {:s},(@"+self.ch_to_str(ch_list)+")").format(fw_char,val,ch_list))
+            self.interface.write(("SENS:{}RES:OCOM {:s},"+self.ch_to_str(ch_list)).format(fw_char,val))
 
     def get_resistance_zcomp(self, ch_list, fw=False):
         fw_char = "F" if fw else ""
-        query_str = ("SENS:{}RES:OCOM? (@"+self.ch_to_str(ch_list)+")").format(fw_char,ch_list)
-        output = self.interface.query_ascii_values(query_str, converter=u'd')
-        return {ch: val for ch, val in zip(ch_list, output) }
+        if self.dmm=="OFF"
+            raise Exception("Cannot issue command when DMM is disabled. Enable DMM") 
+        else: 
+            query_str = ("SENS:{}RES:OCOM? "+self.ch_to_str(ch_list)).format(fw_char)
+            output = self.interface.query_ascii_values(query_str, converter=u'd')
+            return {ch: val for ch, val in zip(ch_list, output) }
 
 class AgilentN5183A(SCPIInstrument):
     """AgilentN5183A microwave source"""
