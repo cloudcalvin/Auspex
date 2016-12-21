@@ -55,6 +55,17 @@ class Agilent34970A(SCPIInstrument):
     def scanlist(self, ch_list):
         self.interface.write("ROUT:SCAN "+self.ch_to_str(ch_list))
 
+#Start Scan 
+    def scan(self):
+        self.interface.write("INIT")
+
+#Read Values
+    def read(self):
+        if self.dmm=="ON":
+            return self.interface.query_ascii_values("FETC?", converter=u'e')
+        else:
+            raise Exception("Cannot issue command when DMM is disabled. Enable DMM")
+
 # Commands that configure resistance measurement type, 2 or 4 wire
 
     def set_resistance_chan(self, ch_list, fw=False):
