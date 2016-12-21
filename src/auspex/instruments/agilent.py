@@ -16,18 +16,21 @@ class Agilent34970A(SCPIInstrument):
     """Agilent 34970A MUX"""
 
 # Allowed value arrays
+
     RES_VALUES      = [1E2, 1E3, 1E4, 1E5, 1E6, 1E7, 1E8]
     PLC_VALUES      = [0.02, 0.2, 1, 10, 20, 100, 200]
-    ONOFF_VALUES    = ['ON','OFF']
+    ONOFF_VALUES    = ['ON', 'OFF']
     TRIGSOUR_VALUES = ['BUS','IMM','EXT','TIM']
     ADVSOUR_VALUES  = ['EXT','BUS','IMM']
 
 # Commands needed to configure MUX for measurement with an external instrument
+
     dmm            = StringCommnd(scpi_string="INST:DMM",value_map={'ON': '1', 'OFF': '0'})
     trigger_source = StringCommand(scpi_string="TRIG:SOUR",allowed_values=TRIGSOUR_VALUES)
     advance_source = StringCommand(scpi_string="ROUT:CHAN:ADV:SOUR",allowed_values=ADVSOUR_VALUES)
 
 # Generic init and connect methods
+
     def __init__(self, resource_name=None, *args, **kwargs):
         super(Agilent34970A, self).__init__(resource_name, *args, **kwargs)
         self.name = "Agilent 34970A MUX"
@@ -39,32 +42,38 @@ class Agilent34970A(SCPIInstrument):
         self.interface._resource.read_termination = u"\n"
 
 #Channel to String helper function converts int array to channel list string
+
     def ch_to_str(self, ch_list):
         return ("(@"+','.join(['{:d}']*len(ch_list))+")").format(*ch_list)
 
+#Setup Scan List
+
     @property
     def scanlist(self):
-        ch_string = self.interface.query("ROUT:SCAN?")
-        return ch_string
+        return self.interface.query_ascii_values("ROUT:SCAN?", converter=u'd')
     @scanlist.setter
     def scanlist(self, ch_list):
         self.interface.write("ROUT:SCAN "+self.ch_to_str(ch_list))
 
-# Commands that configure resistance measurements without internal DMM
+# Commands that configure resistance measurement type, 2 or 4 wire
 
-    def set_fwire(self, val, ch_list):
-        if val not in ONOFF_VALUES:
-            raise ValueError("Channels configured for 4 wire measurement must be ON or OFF")
-        if self.dmm=="ON"
-            raise Exception("Cannot issue command when DMM is enabled. Disable DMM")
+    def set_resistance_chan(self, ch_list, fw=False):
+        if self.dmm=="ON":
+            fw_char = "F" if fw else "" 
+            self.interface.write(("CONF:{}RES "+self.ch_to_str(ch_list)).format(fw_char))
         else:
-            self.interface.write(("ROUT:CHAN:FWIR {:s},"+self.ch_to_str(ch_list)).format(val))
+            fw_char = "ON," if fw else "OFF," 
+            self.interface.write(("ROUT:CHAN:FWIR {}"+self.ch_to_str(ch_list)).format(fw_char))
 
-    def get_fwire(self, ch_list):
-        if self.dmm=="ON"
-            raise Exception("Cannot issue command when DMM is enabled. Disable DMM")
+    def get_resistance_chan(self, ch_list):
+        if self.dmm=="ON":
+            query_str = "SENS:FUNC? "+self.ch_to_str(ch_list)
+            output = self.interface.query_ascii_values(query_str, converter=u's')
         else:
-            return self.interface.query("ROUT:CHAN:FWIR? "+self.ch_to_str(ch_list))
+            query_str = "ROUT:CHAN:FWIR? "+self.ch_to_str(ch_list)
+            output = self.interface.query_ascii_values(query_str, converter=u'd')
+        return {ch: val for ch, val in zip(ch_list, output) }
+          
 
 # Commands that configure resistance measurements with internal DMM
 
@@ -82,8 +91,8 @@ class Agilent34970A(SCPIInstrument):
         if self.dmm=="OFF"
             raise Exception("Cannot issue command when DMM is disabled. Enable DMM")
         else: 
-            query_str = ("SENS:{}RES:RANG? "+self.ch_to_str(ch_list)).format(fw_char,ch_list)
-            output = self.interface.query_ascii_values(query_str, converter=u'd')   
+            query_str = ("SENS:{}RES:RANG? "+self.ch_to_str(ch_list)).format(fw_char)
+            output = self.interface.query_ascii_values(query_str, converter=u'e')   
             return {ch: val for ch, val in zip(ch_list, output) }
 
     def set_resistance_resolution(self, val, ch_list, fw=False):
@@ -100,7 +109,8 @@ class Agilent34970A(SCPIInstrument):
         if self.dmm=="OFF"
             raise Exception("Cannot issue command when DMM is disabled. Enable DMM") 
         else:
-            output = self.interface.query_ascii_values(("SENS:{}RES:NPLC? "+self.ch_to_str(ch_list)).format(fw_char)) 
+            query_str = ("SENS:{}RES:NPLC? "+self.ch_to_str(ch_list)).format(fw_char)
+            output = self.interface.query_ascii_values(query_str, converter=u'e') 
             return {ch: val for ch, val in zip(ch_list, output) }
 
     def set_resistance_zcomp(self, val, ch_list, fw=False):
