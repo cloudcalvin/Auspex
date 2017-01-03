@@ -10,6 +10,7 @@ from .instrument import SCPIInstrument, StringCommand, FloatCommand, IntCommand,
 from auspex.log import logger
 import socket
 import time
+import re
 import numpy as np
 
 class Agilent34970A(SCPIInstrument):
@@ -25,7 +26,7 @@ class Agilent34970A(SCPIInstrument):
 
 # Commands needed to configure MUX for measurement with an external instrument
 
-    dmm            = StringCommnd(scpi_string="INST:DMM",value_map={'ON': '1', 'OFF': '0'})
+    dmm            = StringCommand(scpi_string="INST:DMM",value_map={'ON': '1', 'OFF': '0'})
     trigger_source = StringCommand(scpi_string="TRIG:SOUR",allowed_values=TRIGSOUR_VALUES)
     advance_source = StringCommand(scpi_string="ROUT:CHAN:ADV:SOUR",allowed_values=ADVSOUR_VALUES)
 
@@ -50,7 +51,9 @@ class Agilent34970A(SCPIInstrument):
 
     @property
     def scanlist(self):
-        return self.interface.query_ascii_values("ROUT:SCAN?", converter=u'd')
+        slist = re.findall('\d{3}(?=[,)])',self.interface.query("ROUT:SCAN?"))
+        return [int(i) for i in slist]
+
     @scanlist.setter
     def scanlist(self, ch_list):
         self.interface.write("ROUT:SCAN "+self.ch_to_str(ch_list))
@@ -90,16 +93,16 @@ class Agilent34970A(SCPIInstrument):
 
     def set_resistance_range(self, val, ch_list, fw=False):
         fw_char = "F" if fw else "" 
-        if val not in RES_VALUES:
-            raise ValueError(("Resistance range must be {"+'|'.join(['{:E}']*len(RES_VALUES))+"} Ohms").format(*RES_VALUES))
-        if self.dmm=="OFF"
+        if val not in self.RES_VALUES:
+            raise ValueError(("Resistance range must be "+'|'.join(['{:E}']*len(self.RES_VALUES))+" Ohms").format(*self.RES_VALUES))
+        if self.dmm=="OFF":
             raise Exception("Cannot issue command when DMM is disabled. Enable DMM")
         else: 
             self.interface.write(("SENS:{}RES:RANG {:E},"+self.ch_to_str(ch_list)).format(fw_char,val))       
 
     def get_resistance_range(self, ch_list, fw=False):
         fw_char = "F" if fw else ""
-        if self.dmm=="OFF"
+        if self.dmm=="OFF":
             raise Exception("Cannot issue command when DMM is disabled. Enable DMM")
         else: 
             query_str = ("SENS:{}RES:RANG? "+self.ch_to_str(ch_list)).format(fw_char)
@@ -108,16 +111,16 @@ class Agilent34970A(SCPIInstrument):
 
     def set_resistance_resolution(self, val, ch_list, fw=False):
         fw_char = "F" if fw else ""
-        if val not in PLC_VALUES:
-            raise ValueError(("PLC integration times must be {"+'|'.join(['{:E}']*len(PLC_VALUES))+"} cycles").format(*PLC_VALUES))
-        if self.dmm=="OFF"
+        if val not in self.PLC_VALUES:
+            raise ValueError(("PLC integration times must be "+'|'.join(['{:E}']*len(self.PLC_VALUES))+" cycles").format(*self.PLC_VALUES))
+        if self.dmm=="OFF":
             raise Exception("Cannot issue command when DMM is disabled. Enable DMM") 
         else: 
             self.interface.write(("SENS:{}RES:NPLC {:E},"+self.ch_to_str(ch_list)).format(fw_char,val))       
 
     def get_resistance_resolution(self, ch_list, fw=False):
         fw_char = "F" if fw else ""
-        if self.dmm=="OFF"
+        if self.dmm=="OFF":
             raise Exception("Cannot issue command when DMM is disabled. Enable DMM") 
         else:
             query_str = ("SENS:{}RES:NPLC? "+self.ch_to_str(ch_list)).format(fw_char)
@@ -126,16 +129,16 @@ class Agilent34970A(SCPIInstrument):
 
     def set_resistance_zcomp(self, val, ch_list, fw=False):
         fw_char = "F" if fw else ""
-        if val not in ONOFF_VALUES:
+        if val not in self.ONOFF_VALUES:
             raise ValueError("Zero compensation must be ON or OFF. Only valid for resistance range less than 100 kOhm")
-        if self.dmm=="OFF"
+        if self.dmm=="OFF":
             raise Exception("Cannot issue command when DMM is disabled. Enable DMM") 
         else: 
             self.interface.write(("SENS:{}RES:OCOM {:s},"+self.ch_to_str(ch_list)).format(fw_char,val))
 
     def get_resistance_zcomp(self, ch_list, fw=False):
         fw_char = "F" if fw else ""
-        if self.dmm=="OFF"
+        if self.dmm=="OFF":
             raise Exception("Cannot issue command when DMM is disabled. Enable DMM") 
         else: 
             query_str = ("SENS:{}RES:OCOM? "+self.ch_to_str(ch_list)).format(fw_char)
