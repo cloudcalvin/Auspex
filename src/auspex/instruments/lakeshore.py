@@ -128,7 +128,7 @@ class LakeShore335(SCPIInstrument):
 	@config_htr_1.setter
 	def config_htr_1(self, vals):
 		self.check_hconf_msg(vals)
-		self.interface.write(("HTRSET 1,"+','.join(['{:E}']*len(vals))).format(*vals))
+		self.interface.write("HTRSET 1,{:d},{:d},{:d},{:E},{:d}".format(int(vals[0]),int(vals[1]),int(vals[2]),vals[3],int(vals[4])))
 
 	@property
 	def  config_htr_2(self):
@@ -138,7 +138,7 @@ class LakeShore335(SCPIInstrument):
 	@config_htr_2.setter
 	def config_htr_2(self, vals):
 		self.check_hconf_msg(vals)
-		self.interface.write(("HTRSET 2,"+','.join(['{:E}']*len(vals))).format(*vals))
+		self.interface.write("HTRSET 2,{:d},{:d},{:d},{:E},{:d}".format(int(vals[0]),int(vals[1]),int(vals[2]),vals[3],int(vals[4])))
 	
 	@property
 	def  control_htr_1(self):
