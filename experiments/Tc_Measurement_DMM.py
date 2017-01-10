@@ -29,7 +29,7 @@ class Cooldown(Experiment):
 
 	# Define Experiment Axis
 	index		= IntParameter(default=0,unit="none")
-	chan_num	= IntParameter(default=101,unit="channel")
+	#chan_num	= IntParameter(default=101,unit="channel")
 
 	# Setup Output Connectors (Measurements)
 	sheet_res	= OutputConnector()
@@ -75,6 +75,9 @@ class Cooldown(Experiment):
 		self.lakeshore.config_sense_A = A_config
 		self.lakeshore.config_sense_B = B_config
 
+		self.index.assign_method(int)
+
+
 	async def run(self):
 
 		self.mux.scan()
@@ -87,6 +90,30 @@ class Cooldown(Experiment):
 		await self.sys_time.push(time.time())
 
 
-	
+if __name__ == '__main__':
+
+    exp = Cooldown()
+
+    sample_name = "TOX_14_15_18_19"
+    date        = datetime.datetime.today().strftime('%Y-%m-%d')
+    file_path   = "data\Tc\{samp:}\{samp:}-Tc_{date:}.h5".format(samp=sample_name, date=date)
+
+    wr = WriteToHDF5(file_path)
+
+    # define dummy index
+    i = 1
+
+    # Add points until base temp is reached
+    def refine_func(sweep_axis):
+
+    	if exp.lakeshore.Temp("B") < 5: 
+    		return False
+
+    	i = i + 1
+    	sweep_axis.add_points(i)
+
+    	return True
+
+  
 
 
