@@ -13,8 +13,9 @@ def is_valid_ipv4(ipv4_address):
     try:
         socket.inet_aton(ipv4_address)
         if ipv4_address.count(".") != 3:
-            logger.warning("User-provided IP {} is a valid IP address but does" +
-                " not appear to be in human-readable format.".format(ipv4_address))
+            logger.warning("User-provided IP {} is a valid IP address but does".format(ipv4_address) +
+                " not appear to be in human-readable format.")
+            return False
         return True
     except socket.error:
         return False
