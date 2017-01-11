@@ -94,7 +94,7 @@ class LakeShore335(SCPIInstrument):
 		if sense not in self.T_VALS: 
 			raise Exception("Must read sensor A or B")
 		else: 
-			return self.interface.query(("KRDG? {}").format(sense))
+			return float(self.interface.query(("KRDG? {}").format(sense)))
 
 # Configure T senses
 
