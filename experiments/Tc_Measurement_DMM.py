@@ -81,39 +81,45 @@ class Cooldown(Experiment):
 	async def run(self):
 
 		self.mux.scan()
+		await self.temp_A.push(self.lakeshore.Temp("A"))
+		await self.temp_B.push(self.lakeshore.Temp("B"))
+		await self.sys_time.push(time.time())
+
 		while self.mux.interface.OPC() == 0:
 			await asyncio.sleep(len(chan_list)*plc/60)
 
 		await self.sheet_res.push(self.mux.read())
-		await self.temp_A.push(self.lakeshore.Temp("A"))
-		await self.temp_B.push(self.lakeshore.Temp("B"))
-		await self.sys_time.push(time.time())
+
 
 
 if __name__ == '__main__':
 
     exp = Cooldown()
 
+    # 
     sample_name = "TOX_14_15_18_19"
     date        = datetime.datetime.today().strftime('%Y-%m-%d')
     file_path   = "data\Tc\{samp:}\{samp:}-Tc_{date:}.h5".format(samp=sample_name, date=date)
 
+    # Setup datafile and define which data to write, plot ect.
     wr = WriteToHDF5(file_path)
+    edges = [(exp.sheet_res, wr),(exp.temp_A, wr),(exp.temp_B,wr),(exp.sys_time,wr)]
+    exp.set_graph(edges)
 
-    # define dummy index
-    i = 1
-
-    # Add points until base temp is reached
-    def refine_func(sweep_axis):
+    # Add points 10 at a time until base temp is reached
+    def while_temp(sweep_axis):
 
     	if exp.lakeshore.Temp("B") < 5: 
     		return False
 
-    	i = i + 1
-    	sweep_axis.add_points(i)
+    	sweep_axis.add_points(range(10))
 
     	return True
 
-  
+    # Defines index as sweep axis where while_temp function determines end condition
+    sweep_axis = exp.add_sweep(exp.index, range(1), refine_func=while_temp)
+
+    # Run the experiment
+    exp.run_sweeps()
 
 
