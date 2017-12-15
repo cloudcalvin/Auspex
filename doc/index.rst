@@ -46,7 +46,11 @@ Which will automatically fetch and install all of the requirements. If you are u
 - networkx >= 1.11
 - matplotlib >= 2.0.0
 - cffi >= 1.10.0
-- scikit-learn >= 1.16 
+- scikit-learn >= 1.16
+
+For basic functionality, you'll need to create a set of YAML configuration
+files: **instruments.yml**, **measurements.yml** and **filters.yml**.
+Documentation for constructing these files can be found in the :ref:`configuration`
 
 Qubit Experiments
 *****************
@@ -64,11 +68,10 @@ Contents:
 .. toctree::
    :maxdepth: 1
 
+   Configuration <configuration>
    Instrument Drivers <instruments>
    Defining Experiments <experiments>
    Advanced Sweeps <sweeps>
    Qubit Experiments <qubits>
    Plotting Client <plotting>
    Full API <api/auspex>
-
-

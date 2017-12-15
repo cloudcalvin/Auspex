@@ -1,17 +1,23 @@
 Experiment Documentation
 ========================
 
+Auspex provides a variety of different abstraction levels through which you can
+specify experiments.  The most basic of these would be simple scripting using
+Auspex instruments and python looping constructs.  For more complicated experiments
+with shared commonalities, a class structure can be made to support more standardized
+data taking.
+
 Scripting
 *********
 
-Instantiating a few *Instrument* classes as decribed in the :ref:`relevant documentation <instruments>` provides us with an environment sufficient to perform any sort of measurement. Let us revisit our simple example with a few added instruments, and also add a few software averages to our measurement.::
+Instantiating a few *Instrument* classes as described in the :ref:`relevant documentation <instruments>` provides us with an environment sufficient to perform any sort of measurement. Let us revisit our simple example with a few added instruments, and also add a few software averages to our measurement.::
 
     pspl  = Picosecond10070A("GPIB0::24::INSTR") # Pulse generator
     mag   = AMI430("192.168.5.109")              # Magnet controller
     keith = Keithley2400("GPIB0::25::INSTR")     # Source meter
 
     pspl.amplitude = 0.944 # V
-    mag.field      = 0.010 # T    
+    mag.field      = 0.010 # T
     time.sleep(0.1) # Stableize
 
     resistance_values = []
@@ -23,7 +29,7 @@ Instantiating a few *Instrument* classes as decribed in the :ref:`relevant docum
 
     avg_res_vals = np.mean(resistance, axis=0)
 
-We have omitted a number of configuration commands for brevity. The above script works perfectly well if we always perform the exact same measurement, i.e. we hold the field and pulse amplitude fixed but vary its duration. This is normally an unrealistic restriction, since the experimentor more often than not will want to repeat the same fundamental measurement for any number of sweep conditions.
+We have omitted a number of configuration commands for brevity. The above script works perfectly well if we always perform the exact same measurement, i.e. we hold the field and pulse amplitude fixed but vary its duration. This is normally an unrealistic restriction, since the experimenter more often than not will want to repeat the same fundamental measurement for any number of sweep conditions.
 
 Defining Experiments
 ********************
@@ -50,7 +56,7 @@ Therefore, we recommend that users package their measurements into *Experiments*
         def init_instruments(self):
             # Instrument initialization goes here, and is run
             # automatically by run_sweeps
-            
+
             # Assign methods to parameters
             self.field.assign_method(self.mag.set_field)
             self.pulse_duration.assign_method(self.pspl.set_duration)
@@ -89,7 +95,7 @@ but we can at this point sweep any *Parameter* or a combination thereof: ::
     exp.add_sweep(exp.pulse_voltage, np.linspace(0.1, 1.0, 20))
     exp.run_sweeps()
 
-These sweeps can be based on *Parameter* tuples in order to accomodate non-rectilinear sweeps, and can be made adaptive by specifying convergence criteria that can modifying the sweeps on the fly. Full documentation is provided here. The time spent writing a full *Experiment* often pays dividends in terms of flexibility.
+These sweeps can be based on *Parameter* tuples in order to accommodate non-rectilinear sweeps, and can be made adaptive by specifying convergence criteria that can modifying the sweeps on the fly. The time spent writing a full *Experiment* often pays dividends in terms of flexibility.
 
 The Measurement Pipeline
 ************************
@@ -99,7 +105,7 @@ The central ``run`` method of an *Experiment* should not need to worry about fil
 .. figure:: images/ExperimentFlow.png
    :align: center
 
-   An example of measurement dataflow starting from the *Experiment* at left.
+   An example of measurement data flow starting from the *Experiment* at left.
 
 Each block is referred to as a *node* of the experiment graph. Data flow is assumed to be acyclic, though auspex will not save you from yourself if you attempt to circumvent this restriction. Data flow can be one-to-many, but not many-to-one. Certain nodes, such as *correlators* may take multiple inputs, but they are always wired to distinct input connectors. There are a number of advantages to representing processing and analysis as graphs, most of which stem from the ease of reconfiguration. We have even developed a specialized tool, *Quince*, that provides a graphical interfaces for modifying the contents and connectivity of the graph.
 
@@ -108,10 +114,10 @@ Finally, we stress data is streamed asynchronously across the graph. Each node p
 Connectors, Streams, and Descriptors
 ####################################
 
-*OutputConnectors* are "ports" on the experiments through which all measurement data flows. As mentioned above, a single *OutputConnector* can send data to any number of subsequent filter nodes. Each such connection consists of a *DataStream*, which contains an asyncio-compatible queue for shuttling data. Since data is streamed, rather than passed as tidy arrays, all data streams are described by a *DataStreamDescriptor* that describes the dimensionality of the data. 
+*OutputConnectors* are "ports" on the experiments through which all measurement data flows. As mentioned above, a single *OutputConnector* can send data to any number of subsequent filter nodes. Each such connection consists of a *DataStream*, which contains an asyncio-compatible queue for shuttling data. Since data is streamed, rather than passed as tidy arrays, all data streams are described by a *DataStreamDescriptor* that describes the dimensionality of the data.
 
 A *DataStreamDescriptor* contains a list of *Axes*, which contain a list of the points in the axis. These axes may be "intrinisic," as in the case of the ``DataAxis("samples", range(self.samples))`` axis added in the ``init_streams`` method above. An axis may also be a *SweepAxis*, which is added to all descriptors automatically when you add a sweep to an experiment. Thus, assuming we're using the 2D sweep from the example above, data emitted by the experiment is described by the following axes,::
-    
+
     [DataAxis("samples", range(5)),
     SweepAxis("field", np.arange(-0.01, 0.015, 0.005)),
     SweepAxis("pulse_voltage", np.linspace(0.1, 1.0, 20))]
@@ -121,7 +127,7 @@ Importantly, there is no requirement for rectilinear sweeps, which was one of ou
     [SweepAxis("field", np.arange(-0.01, 0.015, 0.005)),
     SweepAxis("pulse_voltage", np.linspace(0.1, 1.0, 20))]
 
-Nodes such as data writers are, of course, written such that they store all of the axis information alongside the data. To define our filter pipeline we instantiate the nodes and then we pass a list of "edges" of the graph to the experiment :: 
+Nodes such as data writers are, of course, written such that they store all of the axis information alongside the data. To define our filter pipeline we instantiate the nodes and then we pass a list of "edges" of the graph to the experiment ::
 
     exp   = SwitchingExperiment()
     write = WriteToHDF5("filename.h5")
@@ -130,11 +136,11 @@ Nodes such as data writers are, of course, written such that they store all of t
              (avg.final_average, write.sink)]
     exp.set_graph(links)
 
-Since this is rather tedious to do manually for large sets of nodes, tools like *Quince* and *PyQLab* can be used to lessen the burden. 
+Since this is rather tedious to do manually for large sets of nodes, tools like *Quince* and *PyQLab* can be used to lessen the burden.
 
 Running Experiments in Jupyter Notebooks
 ****************************************
 
-You should do this.
-
-
+The Jupyter environment provides a nice work space for creating experiments,
+plots and documentation all in one place.  See the examples folder in Auspex for
+a few examples.
