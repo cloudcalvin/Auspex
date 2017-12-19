@@ -35,10 +35,15 @@ import auspex.config
 class ExpProgressBar(object):
     """ Display progress bar(s) on the terminal.
 
-    num: number of progress bars to be display, \
-    corresponding to the number of axes (counting from outer most)
+    Parameters
+    ----------
+    num: int
+        number of progress bars to be display, \
+        corresponding to the number of axes (counting from outer most)
 
-        For running in Jupyter Notebook:
+    Notes
+    -----
+    For running in Jupyter Notebook:
     Needs to open '_tqdm_notebook.py',\
     search for 'n = int(s[:npos])'\
     then replace it with 'n = float(s[:npos])'

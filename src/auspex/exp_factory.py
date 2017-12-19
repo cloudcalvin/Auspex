@@ -89,10 +89,14 @@ class QubitExperiment(Experiment):
         the *load_parameters_sweeps* method of the QubitExpFactory, thus users can provide
         either a space-separated pair of *instr_name method_name* (i.e. *Holzworth1 power*)
         or specify a qubit property that auspex will try to link back to the relevant instrument.
-        (i.e. *q1 measure frequency* or *q2 control power*). For example::
-            exp = QubitExpFactory.create(PulsedSpec(q))
-            exp.add_qubit_sweep("q1 measure frequency", np.linspace(6e9, 6.5e9, 500))
-            exp.run_sweeps()
+        (i.e. *q1 measure frequency* or *q2 control power*).
+
+        Examples
+        --------
+        exp = QubitExpFactory.create(PulsedSpec(q))
+        exp.add_qubit_sweep("q1 measure frequency", np.linspace(6e9, 6.5e9, 500))
+        exp.run_sweeps()
+        
         """
         desc = {property_name:
                 {'name': property_name,
@@ -205,12 +209,20 @@ class QubitExpFactory(object):
     def calibrate_mixer(qubit, mixer="control", first_cal="phase", write_to_file=True,
     offset_range = (-0.2,0.2), amp_range = (0.6,1.4), phase_range = (-np.pi/6,np.pi/6), nsteps = 51):
         """Calibrates IQ mixer offset, amplitude imbalanace, and phase skew.
+
         See Analog Devices Application note AN-1039. Parses instrument connectivity from
         the experiment settings YAML.
-        Arguments:
-            qubit: Qubit identifier string.
-            mixer: One of ("control", "measure") to select which IQ channel is calibrated.
-            first_cal: One of ("phase", "amplitude") to select which adjustment is attempted
+
+        Parameters
+        ----------
+        qubit : string
+            Qubit identifier string.
+
+        mixer : string
+            One of ("control", "measure") to select which IQ channel is calibrated.
+
+        first_cal : string
+            One of ("phase", "amplitude") to select which adjustment is attempted
             first. You should pick whichever the particular mixer is most sensitive to.
             For example, a mixer with -40dBc sideband supression at 1 degree of phase skew
             and 0.1 dB amplitude imbalance should calibrate the phase first.

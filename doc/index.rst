@@ -38,6 +38,7 @@ And subsequently installed using pip::
 Which will automatically fetch and install all of the requirements. If you are using an anaconda python distribution, some of the requirements should be install with *conda install*. The following, from *requirements.txt*, are required by Auspex:
 
 - numpy >= 1.11.1
+- numpydoc >= 0.6.0
 - scipy >= 0.17.1
 - PyVISA >= 1.8
 - h5py >= 2.6.0
@@ -47,6 +48,9 @@ Which will automatically fetch and install all of the requirements. If you are u
 - matplotlib >= 2.0.0
 - cffi >= 1.10.0
 - scikit-learn >= 1.16
+- ruamel.yaml >= 0.15.18
+- psutil >= 5.0.0
+- pyzmq >= 16.0.0
 
 For basic functionality, you'll need to create a set of YAML configuration
 files: **instruments.yml**, **measurements.yml** and **filters.yml**.
