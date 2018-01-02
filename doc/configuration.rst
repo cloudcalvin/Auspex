@@ -178,6 +178,64 @@ These are pulse specific parameters which are specified in their YAML block.
 
 .. _pulse documentation: https://bbn-q.github.io/QGL/#pulse-shapes-and-waveforms
 
+Control params
+##############
+
+The control section for each qubit is structured similarly to the measurement section
+and several of the parameters will have the same meaning in the control context.
+Namely the *AWG*, *generator*, etc... will have the exact same meaning as above.
+
+- AWG:
+      See above in the Measurement Params section.
+
+- generator:
+      See above in the Measurement Params section.
+
+- frequency:
+      This is the single-sideband (SSB) modulation frequency of the control channel,
+      set in Hz, and operates in a manner very similar to the *autodyne_freq* of
+      the measurement channel.  In the case of the control channel, the mixer
+      local oscillator is supplied by the *generator* and its frequency is set in
+      the *instruments.yml* file.  To forgo and modulation set this frequency
+      parameter to zero.  To take advantage SSB, set the sum of the generator
+      frequency and this sideband frequency equal to the qubit's frequency.  For
+      example, a qubit with a 5.1 GHz 0-1 transition could be controlled with a
+      generator frequency of 5.2 GHz and a sideband frequency of -100 MHz.
+
+      It's worth pointing out that the actual qubit and cavity frequencies are not
+      directly specified in the measure.yml *or* the instruments.yml.  They are
+      inferred from values in both.  This is likely to change in future releases
+      but for now this is the process.  The microwave generator will have much more
+      frequency precision that any arbitrary waveform generator so it's generally
+      preferable to make small adjustments to the frequency in the generator section
+      of the instruments.yml file.
+
+- cutoff:
+      See above in the Measurement Params section.
+
+- length:
+      See above in the Measurement Params section.
+
+- pi2Amp:
+      This is the calibrated amplitude value for a given pulse shape, etc... to
+      implement a pi/2 pulse.  This value is specified as normalized analog output
+      [0, 1].  In general this value will be roughly half of the *piAmp* though
+      not likely not exactly half.
+
+- piAmp:
+      This is the calibrated amplitude value for a given pulse shape, etc... to
+      implement a pi pulse.
+
+- shape_fun:
+      See above in the Measurement Params section.
+
+- drag_scaling:
+      This is the calibrated amplitude value for a given pulse shape, etc... to
+      implement a pi pulse.
+
+- sigma:
+      See above in the Measurement Params section.
+
 The *instruments* section gives the instrument configuration parameters:
 
 .. code-block:: yaml
@@ -377,5 +435,5 @@ Auspex will try to repsect these macros, but pathological cases will probably fa
 References
 **********
 
-.. [JPM+12] Appl. Phys. Lett. 101, 042604 (2012); https://doi.org/10.1063/1.4739454
-.. [RJG+15] Phys. Rev. A 91, 022118 (2015); https://journals.aps.org/pra/abstract/10.1103/PhysRevA.91.022118
+.. [JPM+12] M. Jerger, et al., Appl. Phys. Lett. 101, 042604 (2012); https://doi.org/10.1063/1.4739454
+.. [RJG+15] Colm A. Ryan, et al., Phys. Rev. A 91, 022118 (2015); https://journals.aps.org/pra/abstract/10.1103/PhysRevA.91.022118
