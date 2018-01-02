@@ -53,8 +53,16 @@ Which will automatically fetch and install all of the requirements. If you are u
 - pyzmq >= 16.0.0
 
 For basic functionality, you'll need to create a set of YAML configuration
-files: **instruments.yml**, **measurements.yml** and **filters.yml**.
-Documentation for constructing these files can be found in the :ref:`configuration`
+files: **instruments.yml**, **measurements.yml** and **filters.yml**.  Examples of
+these files are in the *Auspex/examples* folder.  Additionally, Auspex will need to know
+where to look for these files on your system.  Auspex and QGL will both look for a
+*BBN_MEAS_FILE* environment variable defining the path to your **measure.yml** file.
+
+.. code-block:: bash
+
+    $ BBN_MEAS_FLE=Users/path/to/meas/file/measure.yml
+
+Documentation for constructing these files can be found in the :ref:`configuration`.
 
 Qubit Experiments
 *****************
@@ -72,10 +80,10 @@ Contents:
 .. toctree::
    :maxdepth: 1
 
-   Configuration <configuration>
    Instrument Drivers <instruments>
    Defining Experiments <experiments>
    Advanced Sweeps <sweeps>
    Qubit Experiments <qubits>
+   Configuration <configuration>
    Plotting Client <plotting>
    Full API <api/auspex>

@@ -1,9 +1,9 @@
 .. _configuration:
 
 Configuration
-*************
+=============
 
-Both *Auspex* and *QGL* require a minimal amount of configuration
+Both *Auspex* and `QGL <https://github.com/bbn-q/qgl>`_ require a minimal amount of configuration
 to work correctly.  In *Auspex*, experimental information is separated into
 three YAML configuration files: **measure.yml**, **filters.yml** and
 **instruments.yml**.  The segmentation reflects the way Auspex conceptualizes
@@ -107,6 +107,76 @@ In a departure from the channel centric behavior of our legacy *PyQLab* stack, t
           sigma: 5.0e-09
 
 The control and measurement configurations are specified separately. If a generator is defined for either, Auspex infers that we are mixing up from a lower speed AWG. Otherwise, Auspex infers that direct synthesis is being performed.
+
+Qubit Parameters
+****************
+
+Below is a detailed list of pulse parameters and what they control inside the
+software stack.  The names and design implicitly assume a heterodyne-like measurement
+and qubit control with an IQ mixer.  If you're using a different control or
+measurement scheme you'll need to modify the underlying instrument drivers.
+For more documentation on this see the :ref:`instruments` section.  Note that most of
+the pulse parameters will be used by both QGL and Auspex.
+
+Measurement params
+##################
+
+- AWG:
+      Each qubit channel assumes an AWG channel (IQ) pair for both control and
+      readout.  A generalization of the AWG instrument class would allow for control
+      different from the expected all microwave control with an IQ mixer.  In the
+      example above, the AWG is an APS2 called 'BBNAPS1'.  The '12' specifies the
+      AWG analog outputs 1 and 2 on the APS2 as the ones mapped to I an Q quadrature
+      control for the measurement.
+- trigger:
+      This is a simple marker emitted when any signal is played out of the
+      associated *AWG* channel.  These are useful for triggering external equipment
+      such as digitizer cards like the *X6* or *Alazar*.  QGL will expect a trigger
+      to be defined explicitly for each measurement channel to trigger capture of
+      the measurement signal.
+- receiver:
+      The filter StreamSelector associated with the qubit measurement.  This tells
+      Auspex which set of digitized data is associated with which qubit and where
+      it should flow in the filter pipeline.  The receiver name must be defined in
+      the filters.yml file and is a require parameter for each measure channel.
+- generator:
+      This specifies the microwave generator being used as the local oscillator
+      for measurement.  In the above case we're using a generator called 'Holz1'
+      that should be defined in the instruments file.
+- autodyne_freq:
+      This specifies the offset from the *generator* frequency modulated into the
+      measurement signal.  The particular measurement scheme we use in our lab
+      is referred to as 'autodyne' where a measurement signal is split before being
+      sent to the sample, frequency modulated by a certain amount, broadcast and then down
+      mixed with itself on return.  See the experimental section of [RJG+15]_
+      and [JPM+12]_ for more details.  The result pushes the measurement signal
+      away from the carrier such that resonator-freq = generator-freq +
+      autodyne_freq. Note this parameter can be set to zero to operate in base
+      band mode.
+These are pulse specific parameters which are specified in their YAML block.
+
+- amp:
+      This is the amplitude on a normalized scale from [-1, 1] where negative values
+      correspond to opposite phases in the signal after modulation by the IQ mixer.
+- cutoff:
+      When gaussian pulses are used it becomes necessary to specify a point at which
+      the Arb/DAC/voltage voltage values go to zero.  The cutoff sets the number
+      of standard deviations away from the center when the pulse finally reaches
+      zero.  For tanh shapes this parameter 'squeezes' the edge tanh envelopes by
+      the cutoff value times the sigma value.
+- length:
+      The length of the pulse in seconds
+- shape_fun:
+      The shape of the measurement pulse.  Current options are gaussian, square (constant),
+      drag, tanh etc...  All the options are defined in the QGL/PulseShapes.py file.
+      The most relevant for measurement are constant, tanh (a rounded pulse
+      composed of two tanh shapes ), exp_decay, CLEAR.  See the
+      QGL `pulse documentation`_ for more details.
+- sigma:
+      Sets the length of a standard deviation in seconds for Guassian pulses and
+      sets the edge profile for tanh pulses as ``tanh(x)/sigma``.
+
+.. _pulse documentation: https://bbn-q.github.io/QGL/#pulse-shapes-and-waveforms
 
 The *instruments* section gives the instrument configuration parameters:
 
@@ -303,3 +373,9 @@ In order to split configuration across multiple files, Auspex extends the YAML l
   instruments: !include instruments.yml
 
 Auspex will try to repsect these macros, but pathological cases will probably fail.
+
+References
+**********
+
+.. [JPM+12] Appl. Phys. Lett. 101, 042604 (2012); https://doi.org/10.1063/1.4739454
+.. [RJG+15] Phys. Rev. A 91, 022118 (2015); https://journals.aps.org/pra/abstract/10.1103/PhysRevA.91.022118

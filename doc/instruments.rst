@@ -1,3 +1,5 @@
+.. _instruments:
+
 Instrument Documentation
 ========================
 
@@ -22,7 +24,7 @@ The *Instrument* class is designed to dramatically reduce the amount of boilerpl
         def trigger(self):
             self.interface.write("*TRG")
 
-Each of the Commands is converted into the relevant driver code as detailed below. 
+Each of the Commands is converted into the relevant driver code as detailed below.
 
 Commands
 ########
@@ -44,7 +46,7 @@ will be expanded into the following equivalent set of class methods::
     def frequency(self, value):
         self.set_frequency(value)
 
-Instruments with consistent command syntax (which number fewer than one might hope) lend themselves to extremely concise drivers. Using additional keyword arguments such as ``allowed_values``, ``aliases``, and ``value_map`` allows for more advanced commands to specified without the usual driver fluff. Full documentation can be found in the API reference. 
+Instruments with consistent command syntax (which number fewer than one might hope) lend themselves to extremely concise drivers. Using additional keyword arguments such as ``allowed_values``, ``aliases``, and ``value_map`` allows for more advanced commands to specified without the usual driver fluff. Full documentation can be found in the API reference.
 
 Property Access
 ###############
@@ -61,4 +63,4 @@ Property access gives us a convenient way of interacting with instrument values.
         pspl.trigger()
         time.sleep(0.05)
 
-Properties present certain risks alongside their convenience: running ``instr.falter_slop = 18.0`` will produce no errors (since it's perfectly reasonable Python) despite the user having intended to set the ``filter_slope`` value. As such, we actually lock the class dictionary after parsing and intilization, and will produce errors informing you of your spelling creativities. 
+Properties present certain risks alongside their convenience: running ``instr.falter_slop = 18.0`` will produce no errors (since it's perfectly reasonable Python) despite the user having intended to set the ``filter_slope`` value. As such, we actually lock the class dictionary after parsing and intilization, and will produce errors informing you of your spelling creativities.

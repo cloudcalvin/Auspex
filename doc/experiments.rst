@@ -142,5 +142,5 @@ Running Experiments in Jupyter Notebooks
 ****************************************
 
 The Jupyter environment provides a nice work space for creating experiments,
-plots and documentation all in one place.  See the examples folder in Auspex for
+plots and documentation all in one place.  See the experiments folder in Auspex for
 a few examples.
