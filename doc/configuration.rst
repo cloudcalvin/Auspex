@@ -106,7 +106,12 @@ In a departure from the channel centric behavior of our legacy *PyQLab* stack, t
           drag_scaling: 0.0
           sigma: 5.0e-09
 
-The control and measurement configurations are specified separately. If a generator is defined for either, Auspex infers that we are mixing up from a lower speed AWG. Otherwise, Auspex infers that direct synthesis is being performed.
+The control and measurement configurations are specified separately. If a generator
+is defined for either, Auspex infers that we are mixing up from a lower speed AWG.
+Otherwise, Auspex infers that direct synthesis is being performed.
+
+Doing experimental sweeps over these parameters is more difficult since they
+generally require QGL to recreate sequence files.
 
 Qubit Parameters
 ****************
@@ -236,7 +241,15 @@ Namely the *AWG*, *generator*, etc... will have the exact same meaning as above.
 - sigma:
       See above in the Measurement Params section.
 
-The *instruments* section gives the instrument configuration parameters:
+Instruments
+***********
+
+Instrument parameters are contained in the instruments.yml file.  In the example
+file below there are two APS2s, an X6, and two Holzworth microwave generator channels.
+Settings defined in this file can be swept with Auspex sweeping constructs or just
+sent directly to the equipment manually or with an experiment factory object.
+Every instrument will have a distinct set of values that need to be specified since
+every instrument will have a unique API depending on how it was defined.  
 
 .. code-block:: yaml
 
