@@ -28,4 +28,15 @@ The Qubit Experiment Factory
 Pulse Calibrations
 ******************
 
-To be added.
+Auspex has two built in phase calibration function to make qubit calibration
+easier.  The code for calibration is located in
+`/src/auspex/pulse_calibration`.  A typical situation for an experimenter might
+be calibrating the amplitude of a pulse to implement a pi/2 pulse.  Auspex has
+a :py:func:`auspex.pulse_calibration.calibrate` function that takes in a list of
+qubit calibration objects and  executes them in order:
+
+.. code-block:: python
+
+    calibrate([RabiAmpCalibration("q1"), Pi2Calibration("q1")]
+
+In the example above, a basic Rabi oscillation experiment is run to get a rough calibration of what the amplitude should be for the given pulse parameters.  Then a finer calibration based on robust phase estimation is run.

@@ -32,7 +32,7 @@ from itertools import product
 
 def calibrate(calibrations, update_settings=True, cal_log=True):
     """Takes in a qubit (as a string) and list of calibrations (as instantiated classes).
-    e.g. calibrate_pulses([RabiAmp("q1"), PhaseEstimation("q1")])"""
+    e.g. calibrate([RabiAmp("q1"), PhaseEstimation("q1")])"""
     for calibration in calibrations:
         if not isinstance(calibration, PulseCalibration):
             raise TypeError("calibrate_pulses was passed a calibration that is not actually a calibration.")
