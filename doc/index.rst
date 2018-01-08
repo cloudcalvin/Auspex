@@ -38,7 +38,6 @@ And subsequently installed using pip::
 Which will automatically fetch and install all of the requirements. If you are using an anaconda python distribution, some of the requirements should be install with *conda install*. The following, from *requirements.txt*, are required by Auspex:
 
 - numpy >= 1.11.1
-- numpydoc >= 0.6.0
 - scipy >= 0.17.1
 - PyVISA >= 1.8
 - h5py >= 2.6.0

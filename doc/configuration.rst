@@ -249,7 +249,7 @@ file below there are two APS2s, an X6, and two Holzworth microwave generator cha
 Settings defined in this file can be swept with Auspex sweeping constructs or just
 sent directly to the equipment manually or with an experiment factory object.
 Every instrument will have a distinct set of values that need to be specified since
-every instrument will have a unique API depending on how it was defined.  
+every instrument will have a unique API depending on how it was defined.
 
 .. code-block:: yaml
 
@@ -340,14 +340,18 @@ every instrument will have a unique API depending on how it was defined.
       frequency: 5000090023.0
       enabled: true
 
-Note how the APS2 devices are defined. Each instrument *should* (have patience) possess the *yaml_template* class property that gives an example of the yaml configuration that can be found by running, e.g.:
+Note how the APS2 devices are defined. Each instrument *should* (have patience)
+possess the *yaml_template* class property that gives an example of the yaml
+configuration that can be found by running, e.g.:
 
 .. code-block:: python
 
   from auspex.instruments import APS2
   APS2.yaml_template
 
-Also, note that the instruments referenced in the *qubits* section are defined in the *instruments* section. The *filter* pipeline, which controls the processing of data, can be defined as follows:
+Also, note that the instruments referenced in the *qubits* section are defined
+in the *instruments* section. The *filter* pipeline, which controls the
+processing of data, can be defined as follows:
 
 .. code-block:: yaml
 
