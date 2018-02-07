@@ -102,6 +102,41 @@ def load_from_HDF5_legacy(filename_or_fileobject):
     f.close()
     return data, descriptor
 
+def load_data(filepath=None):
+    """Reimplement a load_data"""
+    if filepath == None:
+        filepath = get_file_name()
+    elif filepath == 'latest':
+        # TO-DO: load the latest data taken
+        print("using the latest file")
+        # Need to know current data path but only the filewriters know this.
+        # Auspex may not be able to support the notion of a latest data file.
+
+    print("Loading file: {}".format(filepath))
+
+    # load all versions of h5 data files
+
+def get_file_name():
+    """Helper function to get a filepath from a dialog box"""
+
+    import tkinter as tk
+    from tkinter import filedialog
+
+    root = tk.Tk()
+    root.withdraw() # remove edges
+
+    filepath = filedialog.askopenfilename()
+    root.update() # fixes OSX hanging issue
+    #https://stackoverflow.com/questions/21866537/what-could-cause-an-open-file-dialog-window-in-tkinter-python-to-be-really-slow
+
+    return filepath
+
+def id_h5file_type(filename):
+    """determine .h5 data file version {matlab,legacy,current}"""
+    with h5py.File(filename_or_fileobject, 'r') as f:
+        # older matlab files with have a path
+        pass
+
 if __name__ == '__main__':
     filename = "test_writehdf5_adaptive_unstructured-0000.h5"
     data, desc = load_from_HDF5(filename)
