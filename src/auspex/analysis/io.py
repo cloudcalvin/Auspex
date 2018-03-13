@@ -11,6 +11,7 @@ from auspex.log import logger
 
 import h5py
 import numpy as np
+import matplotlib.pyplot as plt
 
 def load_from_HDF5(filename_or_fileobject, reshape=True, return_structured_array=True):
     data = {}
@@ -102,19 +103,34 @@ def load_from_HDF5_legacy(filename_or_fileobject):
     f.close()
     return data, descriptor
 
-def load_data(filepath=None):
-    """Reimplement a load_data"""
+def load_data(filepath=None, showPlot=False):
+    """
+    Reimplement load_data.  Takes a file path or None and loads the data.
+
+    """
     if filepath == None:
         filepath = get_file_name()
     elif filepath == 'latest':
         # TO-DO: load the latest data taken
-        print("using the latest file")
+        print("Latest file concept not implemented.")
         # Need to know current data path but only the filewriters know this.
-        # Auspex may not be able to support the notion of a latest data file.
+        # Auspex may not be able to support the notion of a latest data file
+        # without digging into the saved parameters.
 
     print("Loading file: {}".format(filepath))
 
-    # load all versions of h5 data files
+    data, descriptors = load_from_HDF5(filepath)
+    if showPlot:
+        if len(data.keys) == 1: # single qubit data
+            for i in data.keys():
+                dims = descriptors[i].num_dims()
+            if dims == 1: # single dimention data
+                #plt.plot()
+            if dims == 2: # two dimention data
+                #plt.imshow()
+        elif len(data.keys) > 1: # multi qubit data
+            #pass for now
+    return data, descriptors
 
 def get_file_name():
     """Helper function to get a filepath from a dialog box"""
