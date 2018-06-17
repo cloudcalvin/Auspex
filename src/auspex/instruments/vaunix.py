@@ -51,7 +51,8 @@ class Labbrick(Instrument, metaclass=MakeSettersGetters):
             path = os.path.realpath(__file__)
             with open(os.path.join(os.path.dirname(path),"vnx_LMS_api_python.h")) as fid:
                 self.ffi.cdef(fid.read())
-            self._lib = self.ffi.dlopen("vnx_fmsynth.dll")
+            dllpath = os.path.join(os.path.dirname(path), 'vnx_fmsynth.dll')
+            self._lib = self.ffi.dlopen(dllpath)
         except:
             logger.warning("Could not find the Lab Brick driver.")
             self._lib = MagicMock()
@@ -100,6 +101,27 @@ class Labbrick(Instrument, metaclass=MakeSettersGetters):
             value = self.max_freq
             logger.warning('Lab Brick frequency out of range. Set to max = {} GHz'.format(value/1e9))
         self._lib.fnLMS_SetFrequency(self.device_id, int(value * 0.1)) # Convert to tens of Hz from Hz
+
+    @property
+    def output(self):
+        return bool(self._lib.fnLMS_GetRF_On(self.device_id))
+    @output.setter
+    def output(self, value):
+        self._lib.fnLMS_SetRFOn(self.device_id, int(value))
+
+    @property
+    def reference(self):
+        ref = self._lib.fnLMS_GetUseInternalRef(self.device_id)
+        if ref == 1:
+            return 'Internal'
+        else:
+            return 'External'
+    @reference.setter
+    def reference(self, value):
+        value_map = {"INTERNAL": 1, "EXTERNAL": 0}
+        if value.upper() not in value_map.keys():
+            raise ValueError('LabBrick {} reference should be "INTERNAL" or "EXTERNAL", got: {}'.format(self.name, value))
+        self._lib.fnLMS_SetUseInternalRef(self.device_id, value_map[value.upper()])
 
     @property
     def power(self):
