@@ -84,6 +84,9 @@ class Labbrick(Instrument, metaclass=MakeSettersGetters):
         self.max_freq = self._lib.fnLMS_GetMaxFreq(self.device_id) * 10
         self.min_freq = self._lib.fnLMS_GetMinFreq(self.device_id) * 10
 
+        self.output = True
+        self.reference = 'external'
+
     def disconnect(self):
         status = self._lib.fnLMS_CloseDevice(self.device_id)
         if status != 0:
@@ -108,6 +111,7 @@ class Labbrick(Instrument, metaclass=MakeSettersGetters):
     @output.setter
     def output(self, value):
         self._lib.fnLMS_SetRFOn(self.device_id, int(value))
+        time.sleep(0.1)
 
     @property
     def reference(self):
@@ -122,6 +126,7 @@ class Labbrick(Instrument, metaclass=MakeSettersGetters):
         if value.upper() not in value_map.keys():
             raise ValueError('LabBrick {} reference should be "INTERNAL" or "EXTERNAL", got: {}'.format(self.name, value))
         self._lib.fnLMS_SetUseInternalRef(self.device_id, value_map[value.upper()])
+        time.sleep(0.1)
 
     @property
     def power(self):
