@@ -1,6 +1,7 @@
 from scipy.optimize import curve_fit
 import numpy as np
 from numpy.fft import fft
+from itertools import product
 from scipy.linalg import svd, eig, inv, pinv
 from enum import Enum
 from auspex.log import logger
@@ -273,7 +274,7 @@ def fit_ramsey(xdata, ydata, two_freqs = False, AIC = True, showPlot=False, forc
                     plot_ramsey(xdata, ydata, popt2, perr2, fit_model=fit_model)
                 print('Using a two-frequency fit.')
                 print('T2 = {0:.3f} {1} {2:.3f}us'.format( \
-                    fit_result_2[2,2]/1e3, chr(177), fit_result_2[3,2]/1e3))
+                    fit_resulthe data assuming 4 cal pointst_2[2,2]/1e3, chr(177), fit_result_2[3,2]/1e3))
                 return fit_result_2
         except:
             pass
@@ -480,28 +481,41 @@ def fit_single_qubit_rb(data, lengths, showPlot=False):
     avg_infidelity, chr(177), avg_infidelity_err))
     return avg_infidelity, avg_infidelity_err, popt, pcov
 
-def cal_scale(data):
+def cal_scale(data, bit=0, nqubits=1, repeats=2):
     """
-    Scale the data assuming 4 cal points
+    Scale data from calibration points.
 
     Parameters
     ----------
-    data : unscaled data with cal points
+    data : Unscaled data with cal points.
+    bit: Which qubit in the sequence is to be calibrated (0 for 1st, etc...). Default 0.
+    nqubits: Number of qubits in the data. Default 1.
+    repeats: Number of calibraiton repeats. Default 2.
+
 
     Returns
     -------
     data : scaled data array
     """
-    # assume with have 2 cal repeats
-    # TO-DO: make this general!!
-    numRepeats = 2
-    pi_cal = np.mean(data[-1*numRepeats:])
-    zero_cal = np.mean(data[-2*numRepeats:-1*numRepeats])
+    ncals = 2**nqubits * 2
+    calSet = [0, 1]
+    codes = [p for p in product(calSet, repeat=nqubits) for _ in range(repeats)]
+    assert (len(codes) == ncals), "Did not calculate the right number of calibration points."
+    assert (bit < nqubits), "Please select a qubit that is in your data"
 
-    # negative to convert to <z>
-    scale_factor = -(pi_cal - zero_cal) / 2
-    data = data[:-2*numRepeats]
-    data = (data - zero_cal)/scale_factor + 1
+    cals = data[-ncals:]
+    zero_cals = []
+    one_cals = []
+
+    for j in range(ncals):
+        if codes[j][bit] == 0:
+            zero_cals.append(cals[j])
+        if codes[j][bit] == 1:
+            one_cals.append(cals[j])
+
+    scale = -(np.mean(one_cals) - np.mean(zero_cals))/2
+    data = data[:-ncals]
+    data = (data-np.mean(zero_cals))/scale +  1
 
     return data
 
