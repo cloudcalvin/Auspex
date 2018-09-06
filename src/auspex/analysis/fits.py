@@ -274,7 +274,7 @@ def fit_ramsey(xdata, ydata, two_freqs = False, AIC = True, showPlot=False, forc
                     plot_ramsey(xdata, ydata, popt2, perr2, fit_model=fit_model)
                 print('Using a two-frequency fit.')
                 print('T2 = {0:.3f} {1} {2:.3f}us'.format( \
-                    fit_resulthe data assuming 4 cal pointst_2[2,2]/1e3, chr(177), fit_result_2[3,2]/1e3))
+                    fit_result_2[2,2]/1e3, chr(177), fit_result_2[3,2]/1e3))
                 return fit_result_2
         except:
             pass
